@@ -1,0 +1,16 @@
+{
+  "timestamp": "2025.1118-1236",
+  "servicios": {
+    "apache": "active",
+    "mysql": "active"
+  },
+  "versiones": {
+    "php": "8.3.6",
+    "docker": "",
+    "kernel": "6.8.0-87-generic"
+  },
+  "sistema": {
+    "uptime": "1 hour, 40 minutes",
+    "host": "uss"
+  }
+}

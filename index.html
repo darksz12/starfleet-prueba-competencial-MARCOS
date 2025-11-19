@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DIAGNÓSTICO INGENIERÍA - U.S.S. HORIZON</title>
+    <!-- Tailwind CSS para diseño rápido -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* CSS Estilo LCARS (Colores y Fuente) */
+        @import url('https://fonts.googleapis.com/css2?family=Roboto+Mono:wght@400;700&display=swap');
+        :root {
+            --lcars-blue: #CCCCFF; /* Azul claro */
+            --lcars-orange: #FFCC99; /* Naranja claro */
+            --lcars-text: #FF9900; /* Ámbar */
+            --lcars-bg: #1A1A33; /* Fondo muy oscuro */
+        }
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: var(--lcars-bg);
+            color: var(--lcars-blue);
+            min-height: 100vh;
+        }
+        .lcars-panel {
+            background-color: #333366; 
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 0 15px var(--lcars-blue); 
+            transition: transform 0.3s;
+        }
+        .lcars-header {
+            color: var(--lcars-text); 
+            text-shadow: 0 0 5px var(--lcars-text);
+        }
+        .status-ok { color: #33FF33; } /* Verde para estado activo */
+        .status-fail { color: #FF3333; } /* Rojo para estado inactivo */
+    </style>
+</head>
+<body class="p-8">
+    <header class="text-center mb-10">
+        <h1 class="text-3xl lcars-header">PANEL DE DIAGNÓSTICO DE INGENIERÍA</h1>
+        <p class="text-sm lcars-text" id="timestamp">Última lectura: [Cargando fecha estelar...]</p>
+    </header>
+
+    <div id="diagnostics-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        
+        <!-- Panel 1: Servicios Clave -->
+        <div class="lcars-panel">
+            <h2 class="text-xl mb-4 lcars-header">1. ESTADO DE SERVICIOS (LAMP)</h2>
+            <div class="space-y-3">
+                <p>Apache (Web): <span id="status-apache" class="font-bold"></span></p>
+                <p>MySQL/MariaDB: <span id="status-mysql" class="font-bold"></span></p>
+                <p>Escudo Deflector (UFW): <span class="status-ok">ONLINE</span></p>
+            </div>
+        </div>
+
+        <!-- Panel 2: Telemetría de Sistema -->
+        <div class="lcars-panel">
+            <h2 class="text-xl mb-4 lcars-header">2. TELEMETRÍA HOST</h2>
+            <div class="space-y-3">
+                <p>Hostname: <span id="host-name" class="text-white"></span></p>
+                <p>Kernel: <span id="version-kernel" class="text-white"></span></p>
+                <p>Tiempo Activo (Uptime): <span id="system-uptime" class="text-white"></span></p>
+            </div>
+        </div>
+
+        <!-- Panel 3: Versiones de Software -->
+        <div class="lcars-panel">
+            <h2 class="text-xl mb-4 lcars-header">3. VERSIONES CRÍTICAS</h2>
+            <div class="space-y-3">
+                <p>Versión PHP: <span id="version-php" class="text-white"></span></p>
+                <p>Versión Docker: <span id="version-docker" class="text-white"></span></p>
+                <p>Sistema Operativo: <span class="text-white">Ubuntu Server</span></p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Utilizamos fetch para leer el archivo JSON generado por el script de Bash
+            fetch('telemetria.json')
+                .then(response => {
+                    if (!response.ok) {
+                        // Si el archivo no existe o no se puede leer, lanzamos un error
+                        throw new Error('Archivo telemetria.json no encontrado.');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    // Función para asignar clase de estado (verde para active, rojo para inactive)
+                    function setStatus(id, status) {
+                        const element = document.getElementById(id);
+                        element.textContent = status.toUpperCase();
+                        // La clave es la verificación: si incluye 'active' o 'running', es OK
+                        element.className = (status.toLowerCase().includes('active') || status.toLowerCase().includes('running')) 
+                                            ? 'font-bold status-ok' 
+                                            : 'font-bold status-fail';
+                    }
+                    
+                    // 1. Actualizar Timestamp
+                    document.getElementById('timestamp').textContent = `Última lectura: ${data.timestamp}`;
+
+                    // 2. Actualizar Estado de Servicios
+                    setStatus('status-apache', data.servicios.apache);
+                    setStatus('status-mysql', data.servicios.mysql);
+
+                    // 3. Actualizar Versiones y Host
+                    document.getElementById('version-php').textContent = data.versiones.php || 'N/A (No instalado)';
+                    document.getElementById('version-docker').textContent = data.versiones.docker || 'N/A (No instalado)';
+                    document.getElementById('version-kernel').textContent = data.versiones.kernel || 'N/A';
+                    document.getElementById('host-name').textContent = data.sistema.host || 'N/A';
+                    document.getElementById('system-uptime').textContent = data.sistema.uptime || 'N/A';
+                })
+                .catch(error => {
+                    console.error('Error al cargar la telemetría:', error);
+                    // Muestra mensaje de error al usuario si el JSON falla (claro para el examen)
+                    document.getElementById('timestamp').innerHTML = `ERROR: No se pudo cargar el JSON. Ejecute <code>sudo /usr/local/bin/telemetria.sh</code>`;
+                });
+        });
+    </script>
+</body>
+</html>

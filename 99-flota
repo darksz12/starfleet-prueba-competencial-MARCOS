@@ -1,0 +1,14 @@
+#!/bin/bash
+CADETE="Marcos Valero Báscones" 
+ID_GRUPO="YT3" 
+SISTEMA="Módulo de Ingeniería NCC-1701-D"
+
+FECHA_ESTELAR=$(date +"%Y.%m%d.%H%M")
+
+echo "========================================="
+echo "U.S.S. ENTERPRISE - REGISTRO DE ENTRADA"
+echo "Cadete: $CADETE (ID: $ID_GRUPO)"
+echo "Subsistema: $SISTEMA"
+echo "Fecha Estelar: $FECHA_ESTELAR"
+echo "ALERTA: Larga vida y prosperidad."
+echo "========================================="
